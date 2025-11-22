@@ -49,6 +49,12 @@ class Product(TimeStampedModel):
     )
     unit_of_measure = models.CharField(max_length=50, default="Unit")
     initial_stock = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    low_stock_alert = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2, 
+        default=0,
+        help_text="Alert threshold: Show low stock warning when stock goes below this value"
+    )
     is_active = models.BooleanField(default=True)
 
     def __str__(self) -> str:

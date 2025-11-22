@@ -30,6 +30,16 @@ class User(AbstractUser):
         choices=Roles.choices,
         default=Roles.INVENTORY_MANAGER,
     )
+    
+    # Warehouse assignment for warehouse staff (only applicable when role is WAREHOUSE_STAFF)
+    warehouse = models.ForeignKey(
+        'inventory.Warehouse',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='staff_members',
+        help_text="Warehouse assignment for warehouse staff"
+    )
 
     def is_inventory_manager(self) -> bool:
         return self.role == self.Roles.INVENTORY_MANAGER

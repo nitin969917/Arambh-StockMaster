@@ -16,7 +16,10 @@ def signup_view(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            user = form.save(commit=False)
+            # Default role to warehouse_staff for public signups
+            user.role = User.Roles.WAREHOUSE_STAFF
+            user.save()
             messages.success(request, "Account created. You can now log in.")
             return redirect("accounts:login")
     else:

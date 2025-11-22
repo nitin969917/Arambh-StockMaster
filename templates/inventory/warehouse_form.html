@@ -56,6 +56,66 @@
         {% endif %}
         <div class="form-text">Physical address of the warehouse</div>
       </div>
+      
+      <hr class="my-4">
+      <h5 class="mb-4">
+        <i class="bi bi-person-plus text-primary me-2"></i>Warehouse Staff Account
+      </h5>
+      <p class="text-muted mb-4">Create a staff account for this warehouse.</p>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="bi bi-person me-1"></i>Staff Login ID <span class="text-danger">*</span>
+            </label>
+            {{ form.user_username|add_class:"form-control form-control-lg" }}
+            {% if form.user_username.errors %}
+              <div class="text-danger small mt-1">{{ form.user_username.errors }}</div>
+            {% endif %}
+            <div class="form-text">{{ form.user_username.help_text }}</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="bi bi-envelope me-1"></i>Staff Email <span class="text-danger">*</span>
+            </label>
+            {{ form.user_email|add_class:"form-control form-control-lg" }}
+            {% if form.user_email.errors %}
+              <div class="text-danger small mt-1">{{ form.user_email.errors }}</div>
+            {% endif %}
+            <div class="form-text">{{ form.user_email.help_text }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="bi bi-lock me-1"></i>Password <span class="text-danger">*</span>
+            </label>
+            {{ form.user_password1|add_class:"form-control form-control-lg" }}
+            {% if form.user_password1.errors %}
+              <div class="text-danger small mt-1">{{ form.user_password1.errors }}</div>
+            {% endif %}
+            <div class="form-text">{{ form.user_password1.help_text }}</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="bi bi-lock-fill me-1"></i>Confirm Password <span class="text-danger">*</span>
+            </label>
+            {{ form.user_password2|add_class:"form-control form-control-lg" }}
+            {% if form.user_password2.errors %}
+              <div class="text-danger small mt-1">{{ form.user_password2.errors }}</div>
+            {% endif %}
+            <div class="form-text">Re-enter the password to confirm</div>
+          </div>
+        </div>
+      </div>
+      
       <div class="card-footer bg-light border-0 mt-4 p-3">
         <div class="d-flex justify-content-end gap-2">
           <a href="{% url 'inventory:settings' %}" class="btn btn-secondary btn-lg">

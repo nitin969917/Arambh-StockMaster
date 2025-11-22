@@ -21,7 +21,7 @@ def validate_password_strength(password: str):
 class SignUpForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ("username", "email", "role", "password1", "password2")
+        fields = ("username", "email", "password1", "password2")  # Removed role field - defaults to warehouse_staff in view
 
     def clean_username(self):
         username = self.cleaned_data["username"]

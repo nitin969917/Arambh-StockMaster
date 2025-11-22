@@ -19,15 +19,28 @@
           <label class="form-label">
             <i class="bi bi-hash me-1"></i>Reference
           </label>
-          <input type="text" name="reference" class="form-control" value="{{ selected_reference }}" placeholder="Search reference...">
+          <input type="text" name="reference" class="form-control" value="{{ selected_reference }}" placeholder="">
         </div>
         <div class="col-md-3">
           <label class="form-label">
             <i class="bi bi-person me-1"></i>Customer
           </label>
-          <input type="text" name="contact" class="form-control" value="{{ selected_contact }}" placeholder="Search customer...">
+          <input type="text" name="contact" class="form-control" value="{{ selected_contact }}" placeholder="">
         </div>
-        <div class="col-md-3">
+        {% if user.is_warehouse_staff and warehouses %}
+        <div class="col-md-2">
+          <label class="form-label">
+            <i class="bi bi-building me-1"></i>Warehouse
+          </label>
+          <select name="warehouse" class="form-select">
+            <option value="">All Warehouses</option>
+            {% for wh in warehouses %}
+              <option value="{{ wh.id }}" {% if wh.id|stringformat:"s" == selected_warehouse %}selected{% endif %}>{{ wh.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        <div class="col-md-{% if user.is_warehouse_staff and warehouses %}2{% else %}3{% endif %}">
           <label class="form-label">
             <i class="bi bi-filter me-1"></i>Status
           </label>

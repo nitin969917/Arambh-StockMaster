@@ -88,20 +88,20 @@
           </tr>
         </thead>
         <tbody>
-        {% for rule, qty in low_stock_items %}
-          <tr class="{% if qty == 0 %}table-danger{% elif qty <= rule.min_quantity %}table-warning{% endif %}">
-            <td><strong>{{ rule.product }}</strong></td>
-            <td>{{ rule.warehouse }}</td>
+        {% for item in low_stock_items %}
+          <tr class="{% if item.is_out_of_stock %}table-danger{% else %}table-warning{% endif %}">
+            <td><strong>{{ item.product }}</strong></td>
+            <td>{{ item.warehouse }}</td>
             <td>
-              <span class="badge {% if qty == 0 %}bg-danger{% elif qty <= rule.min_quantity %}bg-warning{% else %}bg-success{% endif %}">
-                {{ qty }}
+              <span class="badge {% if item.is_out_of_stock %}bg-danger{% else %}bg-warning{% endif %}">
+                {{ item.quantity }}
               </span>
             </td>
-            <td>{{ rule.min_quantity }}</td>
+            <td>{{ item.threshold }}</td>
             <td>
-              {% if qty == 0 %}
+              {% if item.is_out_of_stock %}
                 <span class="badge bg-danger">Out of Stock</span>
-              {% elif qty <= rule.min_quantity %}
+              {% else %}
                 <span class="badge bg-warning">Low Stock</span>
               {% endif %}
             </td>

@@ -116,7 +116,9 @@
                     <tr>
                       <th><i class="bi bi-box me-1"></i>Product</th>
                       <th><i class="bi bi-hash me-1"></i>Quantity</th>
-                      <th class="text-center"><i class="bi bi-trash me-1"></i>Delete</th>
+                      {% if not is_receipt %}
+                        <th class="text-center"><i class="bi bi-trash me-1"></i>Delete</th>
+                      {% endif %}
                     </tr>
                   </thead>
                   <tbody>
@@ -129,13 +131,22 @@
                         {% endif %}
                       </td>
                       <td>
-                        {{ line_form.quantity|add_class:"form-control" }}
+                        {% if is_receipt %}
+                          {{ line_form.quantity|add_class:"form-control bg-light receipt-quantity" }}
+                          <div class="form-text text-muted small mt-1">
+                            <i class="bi bi-lock me-1"></i>Quantity is auto-filled from product's initial stock and cannot be changed
+                          </div>
+                        {% else %}
+                          {{ line_form.quantity|add_class:"form-control" }}
+                        {% endif %}
                         {% if line_form.quantity.errors %}
                           <div class="text-danger small mt-1">{{ line_form.quantity.errors }}</div>
                         {% endif %}
                       </td>
                       <td class="text-center">
-                        {{ line_form.DELETE }}
+                        {% if not is_receipt %}
+                          {{ line_form.DELETE }}
+                        {% endif %}
                       </td>
                     </tr>
                     {% if line_form.errors %}
@@ -166,4 +177,65 @@
     </form>
   </div>
 </div>
+
+{% if is_receipt and products_initial_stock %}
+<script>
+  // Map of product IDs to initial_stock values
+  const productsInitialStock = {{ products_initial_stock|safe }};
+  
+  // Function to update quantity when product is selected
+  function updateReceiptQuantity(selectElement) {
+    const productId = selectElement.value;
+    const quantityInput = selectElement.closest('tr').querySelector('.receipt-quantity');
+    
+    if (productId && quantityInput) {
+      const initialStock = productsInitialStock[productId] || '0';
+      quantityInput.value = initialStock;
+      // Trigger change event to ensure form validation
+      quantityInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+  
+  // Attach event listeners when page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to existing product selects
+    document.querySelectorAll('select[name*="product"]').forEach(function(select) {
+      select.addEventListener('change', function() {
+        updateReceiptQuantity(this);
+      });
+      
+      // Update quantity on page load if product is already selected
+      if (select.value) {
+        updateReceiptQuantity(select);
+      }
+    });
+    
+    // Watch for dynamically added forms (formset adds new rows)
+    const formsetContainer = document.querySelector('.table-responsive');
+    if (formsetContainer) {
+      // Use MutationObserver to detect new rows added by formset
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          mutation.addedNodes.forEach(function(node) {
+            if (node.nodeType === 1) { // Element node
+              const newSelects = node.querySelectorAll ? node.querySelectorAll('select[name*="product"]') : [];
+              newSelects.forEach(function(select) {
+                select.addEventListener('change', function() {
+                  updateReceiptQuantity(this);
+                });
+              });
+            }
+          });
+        });
+      });
+      
+      observer.observe(formsetContainer, {
+        childList: true,
+        subtree: true
+      });
+    }
+  });
+</script>
+{% endif %}
+
 {% endblock %}

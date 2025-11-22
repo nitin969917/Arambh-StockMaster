@@ -1,72 +1,162 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="mb-3">Dashboard</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+        <i class="bi bi-speedometer2 text-primary me-2"></i>Dashboard
+    </h2>
+    <small class="text-muted">Last updated: <span id="current-time"></span></small>
+</div>
 
-<div class="row g-3 mb-4">
+<div class="row g-4 mb-4">
   <div class="col-md-4">
-    <div class="card card-kpi shadow-sm h-100">
+    <div class="card card-kpi shadow-sm h-100 border-0">
       <div class="card-body">
-        <h5>Receipt</h5>
-        <p>
-          <span class="badge bg-primary">{{ receipt_to_receive }}</span>
-          <span class="ms-1">to receive</span>
-        </p>
-        <p class="mb-1">{{ receipt_late }} Late</p>
-        <p class="mb-0">{{ receipt_operations }} operations</p>
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <h5 class="mb-0">
+            <i class="bi bi-box-arrow-in-down text-success me-2"></i>Receipt
+          </h5>
+          <span class="badge bg-success">{{ receipt_to_receive }}</span>
+        </div>
+        <div class="d-flex align-items-center mb-2">
+          <i class="bi bi-calendar-x text-warning me-2"></i>
+          <span class="me-3">{{ receipt_late }} Late</span>
+        </div>
+        <div class="d-flex align-items-center">
+          <i class="bi bi-list-check text-primary me-2"></i>
+          <span>{{ receipt_operations }} operations</span>
+        </div>
       </div>
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card card-kpi shadow-sm h-100">
+    <div class="card card-kpi shadow-sm h-100 border-0">
       <div class="card-body">
-        <h5>Delivery</h5>
-        <p>
-          <span class="badge bg-primary">{{ delivery_to_deliver }}</span>
-          <span class="ms-1">to Deliver</span>
-        </p>
-        <p class="mb-1">{{ delivery_late }} Late</p>
-        <p class="mb-1">{{ delivery_waiting }} waiting</p>
-        <p class="mb-0">{{ delivery_operations }} operations</p>
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <h5 class="mb-0">
+            <i class="bi bi-truck text-danger me-2"></i>Delivery
+          </h5>
+          <span class="badge bg-danger">{{ delivery_to_deliver }}</span>
+        </div>
+        <div class="d-flex align-items-center mb-2">
+          <i class="bi bi-calendar-x text-warning me-2"></i>
+          <span class="me-3">{{ delivery_late }} Late</span>
+        </div>
+        <div class="d-flex align-items-center mb-2">
+          <i class="bi bi-hourglass-split text-info me-2"></i>
+          <span class="me-3">{{ delivery_waiting }} waiting</span>
+        </div>
+        <div class="d-flex align-items-center">
+          <i class="bi bi-list-check text-primary me-2"></i>
+          <span>{{ delivery_operations }} operations</span>
+        </div>
       </div>
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card card-kpi shadow-sm h-100">
+    <div class="card card-kpi shadow-sm h-100 border-0">
       <div class="card-body">
-        <h6 class="text-muted">Total Products in Stock</h6>
-        <h3>{{ total_stock }}</h3>
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <h6 class="text-muted mb-0">
+            <i class="bi bi-stack text-secondary me-2"></i>Total Products in Stock
+          </h6>
+          <i class="bi bi-graph-up-arrow text-success fs-4"></i>
+        </div>
+        <h3 class="text-primary mb-0">{{ total_stock }}</h3>
+        <p class="text-muted small mb-0 mt-2">Across all locations</p>
       </div>
     </div>
   </div>
 </div>
 
-<h5>Low Stock / Reorder Alerts</h5>
-<table class="table table-sm table-striped">
-  <thead>
-    <tr>
-      <th>Product</th>
-      <th>Warehouse</th>
-      <th>On Hand</th>
-      <th>Min Qty</th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for rule, qty in low_stock_items %}
-    <tr>
-      <td>{{ rule.product }}</td>
-      <td>{{ rule.warehouse }}</td>
-      <td>{{ qty }}</td>
-      <td>{{ rule.min_quantity }}</td>
-    </tr>
-  {% empty %}
-    <tr><td colspan="4" class="text-muted">No low stock alerts.</td></tr>
-  {% endfor %}
-  </tbody>
-</table>
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-gradient">
+    <h5 class="mb-0 text-white">
+      <i class="bi bi-exclamation-triangle me-2"></i>Low Stock / Reorder Alerts
+    </h5>
+  </div>
+  <div class="card-body p-0">
+    {% if low_stock_items %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th><i class="bi bi-box me-1"></i>Product</th>
+            <th><i class="bi bi-building me-1"></i>Warehouse</th>
+            <th><i class="bi bi-archive me-1"></i>On Hand</th>
+            <th><i class="bi bi-bar-chart me-1"></i>Min Qty</th>
+            <th><i class="bi bi-info-circle me-1"></i>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for rule, qty in low_stock_items %}
+          <tr class="{% if qty == 0 %}table-danger{% elif qty <= rule.min_quantity %}table-warning{% endif %}">
+            <td><strong>{{ rule.product }}</strong></td>
+            <td>{{ rule.warehouse }}</td>
+            <td>
+              <span class="badge {% if qty == 0 %}bg-danger{% elif qty <= rule.min_quantity %}bg-warning{% else %}bg-success{% endif %}">
+                {{ qty }}
+              </span>
+            </td>
+            <td>{{ rule.min_quantity }}</td>
+            <td>
+              {% if qty == 0 %}
+                <span class="badge bg-danger">Out of Stock</span>
+              {% elif qty <= rule.min_quantity %}
+                <span class="badge bg-warning">Low Stock</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="p-4 text-center text-muted">
+      <i class="bi bi-check-circle fs-1 text-success mb-3 d-block"></i>
+      <p class="mb-0">No low stock alerts. All products are well-stocked!</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
 
-<p class="text-muted small">
-  Late: schedule date &lt; today's date. Operations: all documents for that type. Waiting: documents in \"Waiting\" status.
-</p>
+<div class="card border-0 shadow-sm mt-4 bg-light">
+  <div class="card-body">
+    <h6 class="text-muted mb-3">
+      <i class="bi bi-info-circle me-2"></i>Legend
+    </h6>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <small class="text-muted">
+          <i class="bi bi-calendar-x text-warning me-1"></i><strong>Late:</strong> schedule date &lt; today's date
+        </small>
+      </div>
+      <div class="col-md-4">
+        <small class="text-muted">
+          <i class="bi bi-list-check text-primary me-1"></i><strong>Operations:</strong> all documents for that type
+        </small>
+      </div>
+      <div class="col-md-4">
+        <small class="text-muted">
+          <i class="bi bi-hourglass-split text-info me-1"></i><strong>Waiting:</strong> documents in "Waiting" status
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const timeElement = document.getElementById('current-time');
+    if (timeElement) {
+        function updateTime() {
+            const now = new Date();
+            timeElement.textContent = now.toLocaleTimeString();
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+    }
+});
+</script>
 {% endblock %}
 
 

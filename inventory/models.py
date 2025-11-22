@@ -70,7 +70,6 @@ class StockDocument(TimeStampedModel):
         RECEIPT = "receipt", "Receipt (Incoming)"
         DELIVERY = "delivery", "Delivery Order (Outgoing)"
         INTERNAL = "internal", "Internal Transfer"
-        ADJUSTMENT = "adjustment", "Stock Adjustment"
 
     class Status(models.TextChoices):
         DRAFT = "draft", "Draft"

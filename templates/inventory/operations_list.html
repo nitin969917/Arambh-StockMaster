@@ -1,84 +1,147 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="mb-3">Operations</h2>
-
-
-<div class="mb-3">
-  {% if user.is_inventory_manager %}
-  <a href="{% url 'inventory:receipt_create' %}" class="btn btn-outline-primary btn-sm me-2">+ Receipt</a>
-  <a href="{% url 'inventory:delivery_create' %}" class="btn btn-outline-primary btn-sm me-2">+ Delivery</a>
-  {% endif %}
-  {% if user.is_warehouse_staff %}
-  <a href="{% url 'inventory:internal_transfer_create' %}" class="btn btn-outline-primary btn-sm me-2">+ Internal Transfer</a>
-  <a href="{% url 'inventory:stock_adjustment_create' %}" class="btn btn-outline-secondary btn-sm">+ Adjustment</a>
-  {% endif %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+        <i class="bi bi-gear-wide text-primary me-2"></i>Operations
+    </h2>
+    <div class="btn-group shadow-sm">
+      {% if user.is_inventory_manager %}
+      <a href="{% url 'inventory:receipt_create' %}" class="btn btn-primary">
+        <i class="bi bi-box-arrow-in-down me-2"></i>+ Receipt
+      </a>
+      <a href="{% url 'inventory:delivery_create' %}" class="btn btn-primary">
+        <i class="bi bi-truck me-2"></i>+ Delivery
+      </a>
+      {% endif %}
+      {% if user.is_warehouse_staff %}
+      <a href="{% url 'inventory:internal_transfer_create' %}" class="btn btn-primary">
+        <i class="bi bi-arrow-left-right me-2"></i>+ Transfer
+      </a>
+      {% endif %}
+    </div>
 </div>
 
-<form method="get" class="row g-2 align-items-end mb-3">
-  <div class="col-md-3">
-    <label class="form-label">Document type</label>
-    <select name="doc_type" class="form-select">
-      <option value="">All</option>
-      {% for value,label in doc_type_choices %}
-        <option value="{{ value }}" {% if value == selected_doc_type %}selected{% endif %}>{{ label }}</option>
-      {% endfor %}
-    </select>
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">
+          <i class="bi bi-file-earmark-text me-1"></i>Document Type
+        </label>
+        <select name="doc_type" class="form-select">
+          <option value="">All Types</option>
+          {% for value,label in doc_type_choices %}
+            <option value="{{ value }}" {% if value == selected_doc_type %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">
+          <i class="bi bi-filter me-1"></i>Status
+        </label>
+        <select name="status" class="form-select">
+          <option value="">All Status</option>
+          {% for value,label in status_choices %}
+            <option value="{{ value }}" {% if value == selected_status %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">
+          <i class="bi bi-building me-1"></i>Warehouse
+        </label>
+        <select name="warehouse" class="form-select">
+          <option value="">All Warehouses</option>
+          {% for wh in warehouses %}
+            <option value="{{ wh.id }}" {% if wh.id|stringformat:'s' == selected_warehouse %}selected{% endif %}>{{ wh.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary w-100" type="submit">
+          <i class="bi bi-search me-2"></i>Apply Filters
+        </button>
+      </div>
+    </form>
   </div>
-  <div class="col-md-3">
-    <label class="form-label">Status</label>
-    <select name="status" class="form-select">
-      <option value="">All</option>
-      {% for value,label in status_choices %}
-        <option value="{{ value }}" {% if value == selected_status %}selected{% endif %}>{{ label }}</option>
-      {% endfor %}
-    </select>
-  </div>
-  <div class="col-md-3">
-    <label class="form-label">Warehouse</label>
-    <select name="warehouse" class="form-select">
-      <option value="">All</option>
-      {% for wh in warehouses %}
-        <option value="{{ wh.id }}" {% if wh.id|stringformat:'s' == selected_warehouse %}selected{% endif %}>{{ wh.name }}</option>
-      {% endfor %}
-    </select>
-  </div>
-  <div class="col-md-3">
-    <button class="btn btn-primary w-100" type="submit">Apply Filters</button>
-  </div>
-</form>
+</div>
 
-<table class="table table-striped table-sm">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Type</th>
-      <th>Reference</th>
-      <th>From</th>
-      <th>To</th>
-      <th>Scheduled</th>
-      <th>Status</th>
-      <th>Created</th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for doc in documents %}
-    <tr>
-      <td>{{ doc.id }}</td>
-      <td>{{ doc.get_doc_type_display }}</td>
-      <td>{{ doc.reference }}</td>
-      <td>{{ doc.source_location }}</td>
-      <td>{{ doc.destination_location }}</td>
-      <td>{{ doc.scheduled_date|default:"-" }}</td>
-      <td>
-        <span class="badge bg-secondary">{{ doc.get_status_display }}</span>
-      </td>
-      <td>{{ doc.created_at|date:"Y-m-d H:i" }}</td>
-    </tr>
-  {% empty %}
-    <tr><td colspan="8" class="text-muted">No operations found.</td></tr>
-  {% endfor %}
-  </tbody>
-</table>
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-gradient">
+    <h5 class="mb-0 text-white">
+      <i class="bi bi-list-ul me-2"></i>All Operations
+    </h5>
+  </div>
+  <div class="card-body p-0">
+    {% if documents %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th><i class="bi bi-hash me-1"></i>ID</th>
+            <th><i class="bi bi-tag me-1"></i>Type</th>
+            <th><i class="bi bi-file-earmark me-1"></i>Reference</th>
+            <th><i class="bi bi-arrow-left me-1"></i>From</th>
+            <th><i class="bi bi-arrow-right me-1"></i>To</th>
+            <th><i class="bi bi-calendar me-1"></i>Scheduled</th>
+            <th><i class="bi bi-info-circle me-1"></i>Status</th>
+            <th><i class="bi bi-clock me-1"></i>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for doc in documents %}
+          <tr>
+            <td><code class="text-primary">#{{ doc.id }}</code></td>
+            <td>
+              {% if doc.doc_type == 'receipt' %}
+                <span class="badge bg-success">
+                  <i class="bi bi-box-arrow-in-down me-1"></i>{{ doc.get_doc_type_display }}
+                </span>
+              {% elif doc.doc_type == 'delivery' %}
+                <span class="badge bg-danger">
+                  <i class="bi bi-truck me-1"></i>{{ doc.get_doc_type_display }}
+                </span>
+              {% elif doc.doc_type == 'internal' %}
+                <span class="badge bg-info">
+                  <i class="bi bi-arrow-left-right me-1"></i>{{ doc.get_doc_type_display }}
+                </span>
+              {% else %}
+                <span class="badge bg-warning text-dark">
+                  <i class="bi bi-sliders me-1"></i>{{ doc.get_doc_type_display }}
+                </span>
+              {% endif %}
+            </td>
+            <td><strong>{{ doc.reference|default:"N/A" }}</strong></td>
+            <td><small>{{ doc.source_location|default:"-" }}</small></td>
+            <td><small>{{ doc.destination_location|default:"-" }}</small></td>
+            <td>{{ doc.scheduled_date|date:"M d, Y"|default:"-" }}</td>
+            <td>
+              {% if doc.status == 'done' %}
+                <span class="badge bg-success">{{ doc.get_status_display }}</span>
+              {% elif doc.status == 'ready' %}
+                <span class="badge bg-info text-dark">{{ doc.get_status_display }}</span>
+              {% elif doc.status == 'waiting' %}
+                <span class="badge bg-warning text-dark">{{ doc.get_status_display }}</span>
+              {% elif doc.status == 'canceled' %}
+                <span class="badge bg-danger">{{ doc.get_status_display }}</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ doc.get_status_display }}</span>
+              {% endif %}
+            </td>
+            <td><small class="text-muted">{{ doc.created_at|date:"M d, H:i" }}</small></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="p-5 text-center text-muted">
+      <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
+      <p class="mb-0">No operations found.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}
 
 

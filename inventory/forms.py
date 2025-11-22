@@ -25,6 +25,12 @@ class StockDocumentBaseForm(forms.ModelForm):
     class Meta:
         model = StockDocument
         fields = ["reference", "contact_name", "source_location", "destination_location", "scheduled_date"]
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make scheduled_date a date input
+        if 'scheduled_date' in self.fields:
+            self.fields['scheduled_date'].widget = forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
 
 
 class ReceiptForm(forms.ModelForm):
@@ -51,6 +57,12 @@ class ReceiptForm(forms.ModelForm):
         # Remove source_location field since it's not applicable for receipts
         if 'source_location' in self.fields:
             del self.fields['source_location']
+        # Make scheduled_date a date input
+        if 'scheduled_date' in self.fields:
+            self.fields['scheduled_date'].widget = forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+        # Reduce textarea height for delivery_address
+        if 'delivery_address' in self.fields:
+            self.fields['delivery_address'].widget = forms.Textarea(attrs={'rows': 2, 'class': 'form-control'})
 
 
 class DeliveryForm(forms.ModelForm):
@@ -78,6 +90,12 @@ class DeliveryForm(forms.ModelForm):
         # Remove destination_location field since it's external customer
         if 'destination_location' in self.fields:
             del self.fields['destination_location']
+        # Make scheduled_date a date input
+        if 'scheduled_date' in self.fields:
+            self.fields['scheduled_date'].widget = forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+        # Reduce textarea height for delivery_address
+        if 'delivery_address' in self.fields:
+            self.fields['delivery_address'].widget = forms.Textarea(attrs={'rows': 2, 'class': 'form-control'})
 
 
 class StockMoveLineForm(forms.ModelForm):

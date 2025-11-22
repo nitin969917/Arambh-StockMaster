@@ -23,7 +23,6 @@ urlpatterns = [
     path("deliveries/<int:pk>/cancel/", views.delivery_cancel, name="delivery_cancel"),
     path("deliveries/<int:pk>/print/", views.delivery_print, name="delivery_print"),
     path("transfers/new/", views.internal_transfer_create, name="internal_transfer_create"),
-    path("adjustments/new/", views.stock_adjustment_create, name="stock_adjustment_create"),
     path("move-history/", views.move_history, name="move_history"),
     path("settings/", views.settings_view, name="settings"),
 ]

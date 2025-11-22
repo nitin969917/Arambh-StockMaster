@@ -1,41 +1,121 @@
 {% extends "base.html" %}
+{% load form_tags %}
 {% block content %}
-<h2 class="mb-3">{% if product %}Edit Product{% else %}New Product{% endif %}</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0">
+    <i class="bi bi-box text-primary me-2"></i>{% if product %}Edit Product{% else %}New Product{% endif %}
+  </h2>
+  <a href="{% url 'inventory:product_list' %}" class="btn btn-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Back to Products
+  </a>
+</div>
 
-<form method="post">
-  {% csrf_token %}
-  <div class="row">
-    <div class="col-md-6">
-      <div class="mb-3">
-        <label class="form-label">Name</label>
-        {{ form.name }}
+<div class="card border-0 shadow-lg">
+  <div class="card-body p-4">
+    <form method="post">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger border-0 shadow-sm mb-4">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+        </div>
+      {% endif %}
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-4">
+            <label class="form-label fw-bold">
+              <i class="bi bi-tag me-1"></i>Product Name <span class="text-danger">*</span>
+            </label>
+            {{ form.name|add_class:"form-control form-control-lg" }}
+            {% if form.name.errors %}
+              <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+            {% endif %}
+            <div class="form-text">Enter the full name of the product</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-4">
+            <label class="form-label fw-bold">
+              <i class="bi bi-hash me-1"></i>SKU / Code <span class="text-danger">*</span>
+            </label>
+            {{ form.sku|add_class:"form-control form-control-lg" }}
+            {% if form.sku.errors %}
+              <div class="text-danger small mt-1">{{ form.sku.errors }}</div>
+            {% endif %}
+            <div class="form-text">Unique Stock Keeping Unit identifier</div>
+          </div>
+        </div>
       </div>
-      <div class="mb-3">
-        <label class="form-label">SKU / Code</label>
-        {{ form.sku }}
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-4">
+            <label class="form-label fw-bold">
+              <i class="bi bi-grid me-1"></i>Category
+            </label>
+            {{ form.category|add_class:"form-select form-select-lg" }}
+            {% if form.category.errors %}
+              <div class="text-danger small mt-1">{{ form.category.errors }}</div>
+            {% endif %}
+            <div class="form-text">Product category for organization</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-4">
+            <label class="form-label fw-bold">
+              <i class="bi bi-rulers me-1"></i>Unit of Measure <span class="text-danger">*</span>
+            </label>
+            {{ form.unit_of_measure|add_class:"form-control form-control-lg" }}
+            {% if form.unit_of_measure.errors %}
+              <div class="text-danger small mt-1">{{ form.unit_of_measure.errors }}</div>
+            {% endif %}
+            <div class="form-text">Unit of measurement (e.g., Unit, kg, pcs, etc.)</div>
+          </div>
+        </div>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Category</label>
-        {{ form.category }}
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-4">
+            <label class="form-label fw-bold">
+              <i class="bi bi-stack me-1"></i>Initial Stock (Optional)
+            </label>
+            {{ form.initial_stock|add_class:"form-control form-control-lg" }}
+            {% if form.initial_stock.errors %}
+              <div class="text-danger small mt-1">{{ form.initial_stock.errors }}</div>
+            {% endif %}
+            <div class="form-text">Initial stock quantity to add on creation</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-4">
+            <label class="form-label fw-bold d-block mb-3">
+              <i class="bi bi-toggle-on me-1"></i>Status
+            </label>
+            <div class="form-check form-switch form-switch-lg">
+              {{ form.is_active|add_class:"form-check-input" }}
+              <label class="form-check-label fw-bold" for="{{ form.is_active.id_for_label }}">
+                Product Active
+              </label>
+            </div>
+            {% if form.is_active.errors %}
+              <div class="text-danger small mt-1">{{ form.is_active.errors }}</div>
+            {% endif %}
+            <div class="form-text">Toggle to enable/disable product</div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="col-md-6">
-      <div class="mb-3">
-        <label class="form-label">Unit of Measure</label>
-        {{ form.unit_of_measure }}
+      <div class="card-footer bg-light border-0 mt-4 p-3">
+        <div class="d-flex justify-content-end gap-2">
+          <a href="{% url 'inventory:product_list' %}" class="btn btn-secondary btn-lg">
+            <i class="bi bi-x-circle me-2"></i>Cancel
+          </a>
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="bi bi-check-circle me-2"></i>Save Product
+          </button>
+        </div>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Initial Stock (optional)</label>
-        {{ form.initial_stock }}
-      </div>
-      <div class="form-check mb-3">
-        {{ form.is_active }} <label class="form-check-label">Active</label>
-      </div>
-    </div>
+    </form>
   </div>
-  <button type="submit" class="btn btn-primary">Save</button>
-  <a href="{% url 'inventory:product_list' %}" class="btn btn-secondary">Cancel</a>
-</form>
+</div>
 {% endblock %}
 
 

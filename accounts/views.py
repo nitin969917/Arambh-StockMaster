@@ -41,8 +41,16 @@ def profile_view(request):
     return render(request, "accounts/profile.html")
 
 
+def logout_view(request):
+    """Custom logout view to ensure proper redirection"""
+    from django.contrib.auth import logout
+    logout(request)
+    from django.contrib import messages
+    messages.success(request, "You have been logged out successfully.")
+    return redirect("accounts:login")
+
+
 def password_reset_request(request):
-    otp_code = None
     if request.method == "POST":
         form = PasswordResetRequestForm(request.POST)
         if form.is_valid():
@@ -52,12 +60,50 @@ def password_reset_request(request):
                 or User.objects.filter(email=identifier).first()
             )
             if user:
+                from django.core.mail import send_mail
+                from django.conf import settings
+                
                 otp_obj = PasswordResetOTP.create_otp_for_user(user)
-                otp_code = otp_obj.otp  # For demo purposes we show OTP on screen.
-                messages.info(
-                    request,
-                    "An OTP has been generated. In production this would be sent via email/SMS.",
-                )
+                otp_code = otp_obj.otp
+                
+                # Send OTP via email
+                try:
+                    email_subject = 'StockMaster - Password Reset OTP'
+                    email_message = f'''Hello {user.username},
+
+You have requested to reset your password for StockMaster IMS.
+
+Your OTP (One-Time Password) is: {otp_code}
+
+This OTP is valid for 10 minutes. Please use it to reset your password at:
+http://127.0.0.1:8000/accounts/password-reset/verify/
+
+If you did not request this password reset, please ignore this email.
+
+Best regards,
+StockMaster Team'''
+                    
+                    send_mail(
+                        subject=email_subject,
+                        message=email_message,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[user.email],
+                        fail_silently=False,
+                    )
+                    messages.success(
+                        request,
+                        f"An OTP has been sent to your email address ({user.email}). Please check your inbox.",
+                    )
+                except Exception as e:
+                    # Log the error but don't expose full error to user
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Failed to send password reset email: {str(e)}")
+                    messages.error(
+                        request,
+                        f"Failed to send email. Please contact support or try again later. (OTP for testing: {otp_code})",
+                    )
+                return redirect("accounts:password_reset_verify")
             else:
                 messages.error(request, "User not found for given identifier.")
     else:
@@ -65,7 +111,7 @@ def password_reset_request(request):
     return render(
         request,
         "accounts/password_reset_request.html",
-        {"form": form, "otp_code": otp_code},
+        {"form": form},
     )
 
 

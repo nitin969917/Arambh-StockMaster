@@ -1,75 +1,191 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="mb-3">Delivery {{ document.reference }}</h2>
-
-<div class="mb-3">
-  <a href="{% url 'inventory:delivery_operations' %}" class="btn btn-secondary btn-sm me-2">Back</a>
-  <a href="{% url 'inventory:delivery_print' document.id %}" class="btn btn-outline-secondary btn-sm me-2" target="_blank">Print</a>
-  {% if user.is_inventory_manager %}
-    {% if document.status != 'done' and document.status != 'canceled' %}
-      <a href="{% url 'inventory:delivery_cancel' document.id %}" class="btn btn-outline-danger btn-sm me-2">Cancel</a>
-    {% endif %}
-  {% endif %}
-  {% if user.is_warehouse_staff %}
-    {% if document.status != 'done' %}
-      <a href="{% url 'inventory:delivery_validate' document.id %}" class="btn btn-primary btn-sm">Validate</a>
-    {% endif %}
-  {% endif %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+        <i class="bi bi-file-earmark-text text-primary me-2"></i>Delivery {{ document.reference }}
+    </h2>
+    <div class="btn-group">
+      <a href="{% url 'inventory:delivery_operations' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left me-2"></i>Back
+      </a>
+      <a href="{% url 'inventory:delivery_print' document.id %}" class="btn btn-outline-secondary" target="_blank">
+        <i class="bi bi-printer me-2"></i>Print
+      </a>
+      {% if user.is_inventory_manager %}
+        {% if document.status != 'done' and document.status != 'canceled' %}
+          <a href="{% url 'inventory:delivery_cancel' document.id %}" class="btn btn-outline-danger">
+            <i class="bi bi-x-circle me-2"></i>Cancel
+          </a>
+        {% endif %}
+      {% endif %}
+      {% if user.is_warehouse_staff %}
+        {% if document.status != 'done' %}
+          <a href="{% url 'inventory:delivery_validate' document.id %}" class="btn btn-primary">
+            <i class="bi bi-check-circle me-2"></i>Validate
+          </a>
+        {% endif %}
+      {% endif %}
+    </div>
 </div>
 
-<div class="mb-3">
-  <span class="badge bg-secondary">Draft</span>
-  <span>&gt;</span>
-  <span class="badge bg-warning text-dark">Waiting</span>
-  <span>&gt;</span>
-  <span class="badge bg-info text-dark">Ready</span>
-  <span>&gt;</span>
-  <span class="badge bg-success">Done</span>
+<div class="card border-0 shadow-sm mb-4 bg-gradient">
+  <div class="card-body">
+    <div class="d-flex justify-content-center align-items-center flex-wrap gap-3">
+      <span class="badge {% if document.status == 'draft' %}bg-secondary{% else %}bg-light text-dark{% endif %} fs-6 px-3 py-2">
+        <i class="bi bi-file-earmark me-1"></i>Draft
+      </span>
+      <i class="bi bi-arrow-right text-white"></i>
+      <span class="badge {% if document.status == 'waiting' %}bg-warning{% else %}bg-light text-dark{% endif %} fs-6 px-3 py-2">
+        <i class="bi bi-hourglass-split me-1"></i>Waiting
+      </span>
+      <i class="bi bi-arrow-right text-white"></i>
+      <span class="badge {% if document.status == 'ready' %}bg-info{% else %}bg-light text-dark{% endif %} fs-6 px-3 py-2">
+        <i class="bi bi-check2-circle me-1"></i>Ready
+      </span>
+      <i class="bi bi-arrow-right text-white"></i>
+      <span class="badge {% if document.status == 'done' %}bg-success{% else %}bg-light text-dark{% endif %} fs-6 px-3 py-2">
+        <i class="bi bi-check-circle-fill me-1"></i>Done
+      </span>
+    </div>
+  </div>
 </div>
 
-<div class="row mb-4">
+<div class="row g-4 mb-4">
   <div class="col-md-6">
-    <p><strong>Ship From:</strong> {{ document.source_location }}</p>
-    <p><strong>Customer:</strong> {{ document.contact_name|default:"-" }}</p>
-    <p><strong>Delivery Address:</strong> {{ document.delivery_address|default:"-"|linebreaks }}</p>
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-gradient">
+        <h6 class="mb-0 text-white">
+          <i class="bi bi-info-circle me-2"></i>Delivery Information
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <strong class="text-muted d-block mb-1">
+            <i class="bi bi-geo-alt me-2"></i>Ship From
+          </strong>
+          <span class="badge bg-secondary fs-6">{{ document.source_location|default:"-" }}</span>
+        </div>
+        <div class="mb-3">
+          <strong class="text-muted d-block mb-1">
+            <i class="bi bi-person me-2"></i>Customer
+          </strong>
+          <p class="mb-0">{{ document.contact_name|default:"-" }}</p>
+        </div>
+        <div>
+          <strong class="text-muted d-block mb-1">
+            <i class="bi bi-house me-2"></i>Delivery Address
+          </strong>
+          <p class="mb-0 text-muted">{{ document.delivery_address|default:"-"|linebreaks }}</p>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="col-md-6">
-    <p><strong>Schedule Date:</strong> {{ document.scheduled_date|default:"-" }}</p>
-    <p><strong>Responsible:</strong> {{ document.created_by|default:"-" }}</p>
-    <p><strong>Status:</strong> {{ document.get_status_display }}</p>
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-gradient">
+        <h6 class="mb-0 text-white">
+          <i class="bi bi-calendar-check me-2"></i>Schedule & Status
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <strong class="text-muted d-block mb-1">
+            <i class="bi bi-calendar-event me-2"></i>Schedule Date
+          </strong>
+          <p class="mb-0">{{ document.scheduled_date|date:"F d, Y"|default:"Not scheduled" }}</p>
+        </div>
+        <div class="mb-3">
+          <strong class="text-muted d-block mb-1">
+            <i class="bi bi-person-badge me-2"></i>Responsible
+          </strong>
+          <p class="mb-0">{{ document.created_by|default:"-" }}</p>
+        </div>
+        <div>
+          <strong class="text-muted d-block mb-1">
+            <i class="bi bi-info-circle me-2"></i>Current Status
+          </strong>
+          {% if document.status == 'done' %}
+            <span class="badge bg-success fs-6">{{ document.get_status_display }}</span>
+          {% elif document.status == 'ready' %}
+            <span class="badge bg-info fs-6">{{ document.get_status_display }}</span>
+          {% elif document.status == 'waiting' %}
+            <span class="badge bg-warning text-dark fs-6">{{ document.get_status_display }}</span>
+          {% elif document.status == 'canceled' %}
+            <span class="badge bg-danger fs-6">{{ document.get_status_display }}</span>
+          {% else %}
+            <span class="badge bg-secondary fs-6">{{ document.get_status_display }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
-<h5>Products</h5>
-<table class="table table-sm">
-  <thead>
-    <tr>
-      <th>Product</th>
-      <th>Quantity</th>
-      <th>Available at Source</th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for item in line_infos %}
-    <tr class="{% if item.is_short %}table-danger{% endif %}">
-      <td>{{ item.line.product }}</td>
-      <td>{{ item.line.quantity }}</td>
-      <td>{{ item.available }}</td>
-    </tr>
-  {% empty %}
-    <tr><td colspan="3" class="text-muted">No products on this delivery.</td></tr>
-  {% endfor %}
-  </tbody>
-</table>
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-gradient d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 text-white">
+      <i class="bi bi-box-seam me-2"></i>Products
+    </h5>
+    {% if user.is_inventory_manager %}
+    <a href="{% url 'inventory:delivery_edit' document.id %}" class="btn btn-light btn-sm">
+      <i class="bi bi-pencil me-2"></i>Add / Edit Products
+    </a>
+    {% endif %}
+  </div>
+  <div class="card-body p-0">
+    {% if line_infos %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th><i class="bi bi-box me-1"></i>Product</th>
+            <th><i class="bi bi-hash me-1"></i>Quantity</th>
+            <th><i class="bi bi-archive me-1"></i>Available at Source</th>
+            <th><i class="bi bi-info-circle me-1"></i>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for item in line_infos %}
+          <tr class="{% if item.is_short %}table-danger{% endif %}">
+            <td><strong>{{ item.line.product }}</strong></td>
+            <td>
+              <span class="badge bg-primary">{{ item.line.quantity }}</span>
+            </td>
+            <td>
+              <span class="badge {% if item.available < item.line.quantity %}bg-danger{% else %}bg-success{% endif %}">
+                {{ item.available }}
+              </span>
+            </td>
+            <td>
+              {% if item.is_short %}
+                <span class="badge bg-danger">
+                  <i class="bi bi-exclamation-triangle me-1"></i>Insufficient Stock
+                </span>
+              {% else %}
+                <span class="badge bg-success">
+                  <i class="bi bi-check-circle me-1"></i>Available
+                </span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="p-5 text-center text-muted">
+      <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
+      <p class="mb-0">No products on this delivery.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
 
-<p class="small text-muted">
-  Lines highlighted in red do not have enough stock at the source location.
-</p>
-
-{% if user.is_inventory_manager %}
-<p>
-  <a href="{% url 'inventory:delivery_edit' document.id %}" class="btn btn-outline-primary btn-sm">Add / Edit Products</a>
-</p>
+{% if line_infos %}
+<div class="alert alert-warning border-0 shadow-sm">
+  <i class="bi bi-exclamation-triangle me-2"></i>
+  <strong>Note:</strong> Lines highlighted in red do not have enough stock at the source location.
+</div>
 {% endif %}
 {% endblock %}
 

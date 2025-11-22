@@ -6,12 +6,16 @@
     <title>StockMaster IMS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="{% static 'css/styles.css' %}" rel="stylesheet">
 </head>
 <body>
 <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'inventory:dashboard' %}">StockMaster</a>
+        <a class="navbar-brand" href="{% url 'inventory:dashboard' %}">
+            <i class="bi bi-box-seam me-2"></i>StockMaster
+        </a>
         {% if user.is_authenticated %}
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
@@ -19,30 +23,44 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'inventory:dashboard' %}">Dashboard</a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'inventory:dashboard' %}">
+                        <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if 'operations' in request.resolver_match.url_name or 'receipt' in request.resolver_match.url_name or 'delivery_create' in request.resolver_match.url_name or 'internal_transfer' in request.resolver_match.url_name or 'stock_adjustment' in request.resolver_match.url_name or 'document_form' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:operations_list' %}">Operations</a>
+                    <a class="nav-link {% if 'operations' in request.resolver_match.url_name or 'receipt' in request.resolver_match.url_name or 'delivery_create' in request.resolver_match.url_name or 'internal_transfer' in request.resolver_match.url_name or 'document_form' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:operations_list' %}">
+                        <i class="bi bi-gear-wide me-1"></i>Operations
+                    </a>
                 </li>
                 {% if user.is_inventory_manager %}
                 <li class="nav-item">
-                    <a class="nav-link {% if 'product' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:product_list' %}">Products</a>
+                    <a class="nav-link {% if 'product' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:product_list' %}">
+                        <i class="bi bi-box me-1"></i>Products
+                    </a>
                 </li>
                 {% endif %}
                 <li class="nav-item">
-                    <a class="nav-link {% if 'delivery' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:delivery_operations' %}">Delivery</a>
+                    <a class="nav-link {% if 'delivery' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:delivery_operations' %}">
+                        <i class="bi bi-truck me-1"></i>Delivery
+                    </a>
                 </li>
                 {% if user.is_warehouse_staff %}
                 <li class="nav-item">
-                    <a class="nav-link {% if 'stock_list' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:stock_list' %}">Stock</a>
+                    <a class="nav-link {% if 'stock_list' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:stock_list' %}">
+                        <i class="bi bi-stack me-1"></i>Stock
+                    </a>
                 </li>
                 {% endif %}
                 <li class="nav-item">
-                    <a class="nav-link {% if 'move_history' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:move_history' %}">Move History</a>
+                    <a class="nav-link {% if 'move_history' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:move_history' %}">
+                        <i class="bi bi-clock-history me-1"></i>Move History
+                    </a>
                 </li>
                 {% if user.is_inventory_manager %}
                 <li class="nav-item">
-                    <a class="nav-link {% if 'settings' in request.resolver_match.url_name or 'warehouse' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:settings' %}">Settings</a>
+                    <a class="nav-link {% if 'settings' in request.resolver_match.url_name or 'warehouse' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:settings' %}">
+                        <i class="bi bi-sliders me-1"></i>Settings
+                    </a>
                 </li>
                 {% endif %}
             </ul>
@@ -50,9 +68,15 @@
         {% endif %}
         <div class="d-flex">
             {% if user.is_authenticated %}
-                <span class="navbar-text me-3 text-light">{{ user.username }}</span>
-                <a class="btn btn-outline-light btn-sm me-2" href="{% url 'accounts:profile' %}">My Profile</a>
-                <a class="btn btn-outline-light btn-sm" href="{% url 'accounts:logout' %}">Logout</a>
+                <span class="navbar-text me-3 text-light">
+                    <i class="bi bi-person-circle me-1"></i>{{ user.username }}
+                </span>
+                <a class="btn btn-outline-light btn-sm me-2" href="{% url 'accounts:profile' %}">
+                    <i class="bi bi-person me-1"></i>Profile
+                </a>
+                <a class="btn btn-outline-light btn-sm" href="{% url 'accounts:logout' %}">
+                    <i class="bi bi-box-arrow-right me-1"></i>Logout
+                </a>
             {% else %}
                 <a class="btn btn-outline-light btn-sm" href="{% url 'accounts:login' %}">Login</a>
             {% endif %}
@@ -61,7 +85,16 @@
 </nav>
 <div class="container-fluid p-4">
     {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm" role="alert">
+            {% if message.tags == 'success' %}
+                <i class="bi bi-check-circle-fill me-2"></i>
+            {% elif message.tags == 'error' or message.tags == 'danger' %}
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {% elif message.tags == 'info' %}
+                <i class="bi bi-info-circle-fill me-2"></i>
+            {% elif message.tags == 'warning' %}
+                <i class="bi bi-exclamation-circle-fill me-2"></i>
+            {% endif %}
             {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>

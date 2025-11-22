@@ -1,27 +1,92 @@
 {% extends "base.html" %}
+{% load form_tags %}
 {% block content %}
-<h2 class="mb-3">New Location</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0">
+    <i class="bi bi-geo-alt text-primary me-2"></i>{{ object|yesno:"Edit Location,New Location" }}
+  </h2>
+  <a href="{% url 'inventory:settings' %}" class="btn btn-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Back to Settings
+  </a>
+</div>
 
-<form method="post">
-  {% csrf_token %}
-  <div class="mb-3">
-    <label class="form-label">Warehouse</label>
-    {{ form.warehouse }}
+<div class="card border-0 shadow-lg">
+  <div class="card-body p-4">
+    <form method="post">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger border-0 shadow-sm mb-4">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+        </div>
+      {% endif %}
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="bi bi-building me-1"></i>Warehouse <span class="text-danger">*</span>
+            </label>
+            {{ form.warehouse|add_class:"form-select form-select-lg" }}
+            {% if form.warehouse.errors %}
+              <div class="text-danger small mt-1">{{ form.warehouse.errors }}</div>
+            {% endif %}
+            <div class="form-text">Select the warehouse for this location</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="bi bi-hash me-1"></i>Location Code <span class="text-danger">*</span>
+            </label>
+            {{ form.code|add_class:"form-control form-control-lg" }}
+            {% if form.code.errors %}
+              <div class="text-danger small mt-1">{{ form.code.errors }}</div>
+            {% endif %}
+            <div class="form-text">Unique identifier code (e.g., LOC-001)</div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-8">
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="bi bi-tag me-1"></i>Location Name <span class="text-danger">*</span>
+            </label>
+            {{ form.name|add_class:"form-control form-control-lg" }}
+            {% if form.name.errors %}
+              <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+            {% endif %}
+            <div class="form-text">Descriptive name for the location (e.g., Storage Area A)</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="mb-3">
+            <div class="form-check form-switch mt-4 pt-3">
+              {{ form.is_default|add_class:"form-check-input form-check-input-lg" }}
+              <label class="form-check-label fw-bold" for="{{ form.is_default.id_for_label }}">
+                <i class="bi bi-star me-1"></i>Default Location
+              </label>
+            </div>
+            {% if form.is_default.errors %}
+              <div class="text-danger small mt-1">{{ form.is_default.errors }}</div>
+            {% endif %}
+            <div class="form-text">Mark as default location for this warehouse</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-light border-0 mt-4 p-3">
+        <div class="d-flex justify-content-end gap-2">
+          <a href="{% url 'inventory:settings' %}" class="btn btn-secondary btn-lg">
+            <i class="bi bi-x-circle me-2"></i>Cancel
+          </a>
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="bi bi-check-circle me-2"></i>Save Location
+          </button>
+        </div>
+      </div>
+    </form>
   </div>
-  <div class="mb-3">
-    <label class="form-label">Name</label>
-    {{ form.name }}
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Code</label>
-    {{ form.code }}
-  </div>
-  <div class="form-check mb-3">
-    {{ form.is_default }} <label class="form-check-label">Default location</label>
-  </div>
-  <button type="submit" class="btn btn-primary">Save</button>
-  <a href="{% url 'inventory:warehouse_list' %}" class="btn btn-secondary">Cancel</a>
-</form>
+</div>
 {% endblock %}
 
 

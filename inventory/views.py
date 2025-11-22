@@ -65,11 +65,6 @@ def validate_document(document: StockDocument):
             _update_quant(line.product, src, -qty)
             _update_quant(line.product, dest, qty)
             _create_ledger_entry(document, line.product, src, dest, qty)
-        elif document.doc_type == StockDocument.DocTypes.ADJUSTMENT:
-            # For adjustments we treat quantity as delta directly on destination_location
-            loc = document.destination_location or document.source_location
-            _update_quant(line.product, loc, qty)
-            _create_ledger_entry(document, line.product, None, loc, qty)
 
     document.status = StockDocument.Status.DONE
     document.save(update_fields=["status"])
@@ -288,6 +283,27 @@ def _handle_delivery_create(request):
     return form, formset
 
 
+def _handle_document_create(request, doc_type):
+    """Handle document creation for internal transfers (both source and destination are internal)."""
+    if request.method == "POST":
+        form = StockDocumentBaseForm(request.POST)
+        formset = StockMoveLineFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            document = form.save(commit=False)
+            document.doc_type = doc_type
+            document.created_by = request.user
+            document.status = StockDocument.Status.DRAFT
+            document.save()
+            formset.instance = document
+            formset.save()
+            messages.success(request, f"{doc_type.capitalize()} created.")
+            return redirect("inventory:operations_list")
+    else:
+        form = StockDocumentBaseForm()
+        formset = StockMoveLineFormSet()
+    return form, formset
+
+
 @inventory_manager_required
 def receipt_create(request):
     form, formset = _handle_receipt_create(request)
@@ -315,35 +331,6 @@ def internal_transfer_create(request):
         request,
         "inventory/document_form.html",
         {"form": form, "formset": formset, "title": "New Internal Transfer"},
-    )
-
-
-@warehouse_staff_required
-def stock_adjustment_create(request):
-    """
-    Simplified adjustment: user selects destination location and lines where quantity is delta.
-    """
-    if request.method == "POST":
-        form = StockDocumentBaseForm(request.POST)
-        formset = StockMoveLineFormSet(request.POST)
-        if form.is_valid() and formset.is_valid():
-            document = form.save(commit=False)
-            document.doc_type = StockDocument.DocTypes.ADJUSTMENT
-            document.created_by = request.user
-            document.status = StockDocument.Status.READY
-            document.save()
-            formset.instance = document
-            formset.save()
-            validate_document(document)
-            messages.success(request, "Stock adjustment applied.")
-            return redirect("inventory:operations_list")
-    else:
-        form = StockDocumentBaseForm()
-        formset = StockMoveLineFormSet()
-    return render(
-        request,
-        "inventory/document_form.html",
-        {"form": form, "formset": formset, "title": "New Stock Adjustment"},
     )
 
 

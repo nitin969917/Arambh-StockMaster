@@ -2,19 +2,16 @@
 {% block content %}
 <h2 class="mb-3">Operations</h2>
 
-<ul class="nav nav-tabs mb-3">
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:dashboard' %}">Dashboard</a></li>
-  <li class="nav-item"><a class="nav-link active" href="{% url 'inventory:operations_list' %}">Operations</a></li>
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:stock_list' %}">Stock</a></li>
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:move_history' %}">Move History</a></li>
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:settings' %}">Settings</a></li>
-</ul>
 
 <div class="mb-3">
+  {% if user.is_inventory_manager %}
   <a href="{% url 'inventory:receipt_create' %}" class="btn btn-outline-primary btn-sm me-2">+ Receipt</a>
   <a href="{% url 'inventory:delivery_create' %}" class="btn btn-outline-primary btn-sm me-2">+ Delivery</a>
+  {% endif %}
+  {% if user.is_warehouse_staff %}
   <a href="{% url 'inventory:internal_transfer_create' %}" class="btn btn-outline-primary btn-sm me-2">+ Internal Transfer</a>
   <a href="{% url 'inventory:stock_adjustment_create' %}" class="btn btn-outline-secondary btn-sm">+ Adjustment</a>
+  {% endif %}
 </div>
 
 <form method="get" class="row g-2 align-items-end mb-3">

@@ -82,7 +82,8 @@ class StockDocument(TimeStampedModel):
     doc_type = models.CharField(max_length=20, choices=DocTypes.choices)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
     reference = models.CharField(max_length=100, blank=True)
-    contact_name = models.CharField(max_length=255, blank=True)
+    contact_name = models.CharField(max_length=255, blank=True, help_text="Vendor/Supplier name for Receipts, Customer name for Deliveries")
+    delivery_address = models.TextField(blank=True, help_text="Delivery address for customer (Deliveries) or vendor address (Receipts)")
 
     source_location = models.ForeignKey(
         Location,

@@ -2,14 +2,6 @@
 {% block content %}
 <h2 class="mb-3">Delivery</h2>
 
-<ul class="nav nav-tabs mb-3">
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:dashboard' %}">Dashboard</a></li>
-  <li class="nav-item"><a class="nav-link active" href="{% url 'inventory:delivery_operations' %}">Operations</a></li>
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:product_list' %}">Products</a></li>
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:move_history' %}">Move History</a></li>
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:settings' %}">Settings</a></li>
-</ul>
-
 <div class="d-flex justify-content-between align-items-center mb-2">
   <form method="get" class="row g-2 align-items-end flex-grow-1 me-3">
     <div class="col-md-4">
@@ -39,18 +31,20 @@
   </div>
 </div>
 
+{% if user.is_inventory_manager %}
 <div class="mb-3">
   <a href="{% url 'inventory:delivery_create' %}" class="btn btn-primary btn-sm">NEW Delivery</a>
 </div>
+{% endif %}
 
 {% if view_mode == 'list' %}
 <table class="table table-striped table-sm">
   <thead>
     <tr>
       <th>Reference</th>
-      <th>From</th>
-      <th>To</th>
-      <th>Contact</th>
+      <th>Ship From</th>
+      <th>Customer</th>
+      <th>Delivery Address</th>
       <th>Schedule Date</th>
       <th>Status</th>
     </tr>
@@ -60,8 +54,8 @@
     <tr>
       <td><a href="{% url 'inventory:delivery_detail' doc.id %}">{{ doc.reference }}</a></td>
       <td>{{ doc.source_location }}</td>
-      <td>{{ doc.destination_location }}</td>
-      <td>{{ doc.contact_name }}</td>
+      <td>{{ doc.contact_name|default:"-" }}</td>
+      <td>{{ doc.delivery_address|truncatewords:10|default:"-" }}</td>
       <td>{{ doc.scheduled_date|default:"-" }}</td>
       <td>{{ doc.get_status_display }}</td>
     </tr>

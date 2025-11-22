@@ -2,22 +2,18 @@
 {% block content %}
 <h2 class="mb-3">Delivery {{ document.reference }}</h2>
 
-<ul class="nav nav-tabs mb-3">
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:dashboard' %}">Dashboard</a></li>
-  <li class="nav-item"><a class="nav-link active" href="{% url 'inventory:delivery_operations' %}">Operations</a></li>
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:stock_list' %}">Stock</a></li>
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:move_history' %}">Move History</a></li>
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:settings' %}">Settings</a></li>
-</ul>
-
 <div class="mb-3">
   <a href="{% url 'inventory:delivery_operations' %}" class="btn btn-secondary btn-sm me-2">Back</a>
   <a href="{% url 'inventory:delivery_print' document.id %}" class="btn btn-outline-secondary btn-sm me-2" target="_blank">Print</a>
-  {% if document.status != 'done' and document.status != 'canceled' %}
-    <a href="{% url 'inventory:delivery_cancel' document.id %}" class="btn btn-outline-danger btn-sm me-2">Cancel</a>
+  {% if user.is_inventory_manager %}
+    {% if document.status != 'done' and document.status != 'canceled' %}
+      <a href="{% url 'inventory:delivery_cancel' document.id %}" class="btn btn-outline-danger btn-sm me-2">Cancel</a>
+    {% endif %}
   {% endif %}
-  {% if document.status != 'done' %}
-    <a href="{% url 'inventory:delivery_validate' document.id %}" class="btn btn-primary btn-sm">Validate</a>
+  {% if user.is_warehouse_staff %}
+    {% if document.status != 'done' %}
+      <a href="{% url 'inventory:delivery_validate' document.id %}" class="btn btn-primary btn-sm">Validate</a>
+    {% endif %}
   {% endif %}
 </div>
 
@@ -33,9 +29,9 @@
 
 <div class="row mb-4">
   <div class="col-md-6">
-    <p><strong>From:</strong> {{ document.source_location }}</p>
-    <p><strong>To:</strong> {{ document.destination_location }}</p>
-    <p><strong>Contact:</strong> {{ document.contact_name }}</p>
+    <p><strong>Ship From:</strong> {{ document.source_location }}</p>
+    <p><strong>Customer:</strong> {{ document.contact_name|default:"-" }}</p>
+    <p><strong>Delivery Address:</strong> {{ document.delivery_address|default:"-"|linebreaks }}</p>
   </div>
   <div class="col-md-6">
     <p><strong>Schedule Date:</strong> {{ document.scheduled_date|default:"-" }}</p>
@@ -70,9 +66,11 @@
   Lines highlighted in red do not have enough stock at the source location.
 </p>
 
+{% if user.is_inventory_manager %}
 <p>
   <a href="{% url 'inventory:delivery_edit' document.id %}" class="btn btn-outline-primary btn-sm">Add / Edit Products</a>
 </p>
+{% endif %}
 {% endblock %}
 
 

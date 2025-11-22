@@ -1,38 +1,76 @@
 {% extends "base.html" %}
+{% load form_tags %}
 {% block content %}
 <h2 class="mb-3">{{ title }}</h2>
 
-<ul class="nav nav-tabs mb-3">
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:dashboard' %}">Dashboard</a></li>
-  <li class="nav-item"><a class="nav-link active" href="{% url 'inventory:operations_list' %}">Operations</a></li>
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:stock_list' %}">Stock</a></li>
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:move_history' %}">Move History</a></li>
-  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:settings' %}">Settings</a></li>
-</ul>
-
 <form method="post">
   {% csrf_token %}
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+      {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+    </div>
+  {% endif %}
   <div class="row">
     <div class="col-md-4">
       <div class="mb-3">
         <label class="form-label">Reference</label>
-        {{ form.reference }}
+        {{ form.reference|add_class:"form-control" }}
+        {% if form.reference.errors %}
+          <div class="text-danger small">{{ form.reference.errors }}</div>
+        {% endif %}
       </div>
       <div class="mb-3">
-        <label class="form-label">Contact</label>
-        {{ form.contact_name }}
+        <label class="form-label">{{ form.contact_name.label|default:"Contact" }}</label>
+        {{ form.contact_name|add_class:"form-control" }}
+        {% if form.contact_name.help_text %}
+          <div class="form-text">{{ form.contact_name.help_text }}</div>
+        {% endif %}
+        {% if form.contact_name.errors %}
+          <div class="text-danger small">{{ form.contact_name.errors }}</div>
+        {% endif %}
       </div>
-      <div class="mb-3">
-        <label class="form-label">Source Location</label>
-        {{ form.source_location }}
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Destination Location</label>
-        {{ form.destination_location }}
-      </div>
+      {% if form.delivery_address %}
+        <div class="mb-3">
+          <label class="form-label">{{ form.delivery_address.label }}</label>
+          {{ form.delivery_address|add_class:"form-control" }}
+          {% if form.delivery_address.help_text %}
+            <div class="form-text">{{ form.delivery_address.help_text }}</div>
+          {% endif %}
+          {% if form.delivery_address.errors %}
+            <div class="text-danger small">{{ form.delivery_address.errors }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
+      {% if form.source_location %}
+        <div class="mb-3">
+          <label class="form-label">{{ form.source_location.label }}</label>
+          {{ form.source_location|add_class:"form-select" }}
+          {% if form.source_location.help_text %}
+            <div class="form-text">{{ form.source_location.help_text }}</div>
+          {% endif %}
+          {% if form.source_location.errors %}
+            <div class="text-danger small">{{ form.source_location.errors }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
+      {% if form.destination_location %}
+        <div class="mb-3">
+          <label class="form-label">{{ form.destination_location.label }}</label>
+          {{ form.destination_location|add_class:"form-select" }}
+          {% if form.destination_location.help_text %}
+            <div class="form-text">{{ form.destination_location.help_text }}</div>
+          {% endif %}
+          {% if form.destination_location.errors %}
+            <div class="text-danger small">{{ form.destination_location.errors }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
       <div class="mb-3">
         <label class="form-label">Scheduled Date</label>
-        {{ form.scheduled_date }}
+        {{ form.scheduled_date|add_class:"form-control" }}
+        {% if form.scheduled_date.errors %}
+          <div class="text-danger small">{{ form.scheduled_date.errors }}</div>
+        {% endif %}
       </div>
     </div>
     <div class="col-md-8">
@@ -49,10 +87,17 @@
         <tbody>
         {% for line_form in formset.forms %}
           <tr>
-            <td>{{ line_form.product }}</td>
-            <td>{{ line_form.quantity }}</td>
+            <td>{{ line_form.product|add_class:"form-select" }}{% if line_form.product.errors %}<div class="text-danger small">{{ line_form.product.errors }}</div>{% endif %}</td>
+            <td>{{ line_form.quantity|add_class:"form-control" }}{% if line_form.quantity.errors %}<div class="text-danger small">{{ line_form.quantity.errors }}</div>{% endif %}</td>
             <td>{{ line_form.DELETE }}</td>
           </tr>
+          {% if line_form.errors %}
+            <tr>
+              <td colspan="3" class="text-danger">
+                {% for error in line_form.non_field_errors %}{{ error }}{% endfor %}
+              </td>
+            </tr>
+          {% endif %}
         {% endfor %}
         </tbody>
       </table>

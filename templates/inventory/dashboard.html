@@ -2,24 +2,6 @@
 {% block content %}
 <h2 class="mb-3">Dashboard</h2>
 
-<ul class="nav nav-tabs mb-4">
-  <li class="nav-item">
-    <a class="nav-link active" href="{% url 'inventory:dashboard' %}">Dashboard</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="{% url 'inventory:operations_list' %}">Operations</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="{% url 'inventory:stock_list' %}">Stock</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="{% url 'inventory:move_history' %}">Move History</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="{% url 'inventory:settings' %}">Settings</a>
-  </li>
-</ul>
-
 <div class="row g-3 mb-4">
   <div class="col-md-4">
     <div class="card card-kpi shadow-sm h-100">

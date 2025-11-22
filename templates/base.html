@@ -12,9 +12,45 @@
 <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
     <div class="container-fluid">
         <a class="navbar-brand" href="{% url 'inventory:dashboard' %}">StockMaster</a>
+        {% if user.is_authenticated %}
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'inventory:dashboard' %}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'operations' in request.resolver_match.url_name or 'receipt' in request.resolver_match.url_name or 'delivery_create' in request.resolver_match.url_name or 'internal_transfer' in request.resolver_match.url_name or 'stock_adjustment' in request.resolver_match.url_name or 'document_form' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:operations_list' %}">Operations</a>
+                </li>
+                {% if user.is_inventory_manager %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'product' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:product_list' %}">Products</a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'delivery' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:delivery_operations' %}">Delivery</a>
+                </li>
+                {% if user.is_warehouse_staff %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'stock_list' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:stock_list' %}">Stock</a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'move_history' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:move_history' %}">Move History</a>
+                </li>
+                {% if user.is_inventory_manager %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'settings' in request.resolver_match.url_name or 'warehouse' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inventory:settings' %}">Settings</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
         <div class="d-flex">
             {% if user.is_authenticated %}
-                <span class="navbar-text me-3">{{ user.username }}</span>
+                <span class="navbar-text me-3 text-light">{{ user.username }}</span>
                 <a class="btn btn-outline-light btn-sm me-2" href="{% url 'accounts:profile' %}">My Profile</a>
                 <a class="btn btn-outline-light btn-sm" href="{% url 'accounts:logout' %}">Logout</a>
             {% else %}
@@ -23,31 +59,14 @@
         </div>
     </div>
 </nav>
-<div class="container-fluid">
-    <div class="row">
-        <aside class="col-md-2 bg-light sidebar py-3">
-            {% if user.is_authenticated %}
-            <div class="list-group list-group-flush">
-                <a href="{% url 'inventory:dashboard' %}" class="list-group-item list-group-item-action">Dashboard</a>
-                <a href="{% url 'inventory:product_list' %}" class="list-group-item list-group-item-action">Products</a>
-                <a href="{% url 'inventory:warehouse_list' %}" class="list-group-item list-group-item-action">Warehouses</a>
-                <a href="{% url 'inventory:operations_list' %}" class="list-group-item list-group-item-action">Operations</a>
-                <a href="{% url 'inventory:delivery_operations' %}" class="list-group-item list-group-item-action">Delivery</a>
-                <a href="{% url 'inventory:move_history' %}" class="list-group-item list-group-item-action">Move History</a>
-                <a href="{% url 'accounts:profile' %}" class="list-group-item list-group-item-action">My Profile</a>
-            </div>
-            {% endif %}
-        </aside>
-        <main class="col-md-10 p-4">
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-            {% block content %}{% endblock %}
-        </main>
-    </div>
+<div class="container-fluid p-4">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    {% block content %}{% endblock %}
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

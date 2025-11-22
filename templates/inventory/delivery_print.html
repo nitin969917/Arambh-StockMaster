@@ -17,10 +17,11 @@
 </div>
 
 <h3>Delivery {{ document.reference }}</h3>
-<p><strong>From:</strong> {{ document.source_location }}</p>
-<p><strong>To:</strong> {{ document.destination_location }}</p>
-<p><strong>Contact:</strong> {{ document.contact_name }}</p>
+<p><strong>Ship From:</strong> {{ document.source_location }}</p>
+<p><strong>Customer:</strong> {{ document.contact_name|default:"-" }}</p>
+<p><strong>Delivery Address:</strong> {{ document.delivery_address|default:"-"|linebreaks }}</p>
 <p><strong>Schedule Date:</strong> {{ document.scheduled_date|default:"-" }}</p>
+<p><strong>Status:</strong> {{ document.get_status_display }}</p>
 
 <h5 class="mt-4">Products</h5>
 <table class="table table-sm table-bordered">

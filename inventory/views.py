@@ -6,9 +6,12 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 
+from .decorators import inventory_manager_required, warehouse_staff_required
 from .forms import (
+    DeliveryForm,
     LocationForm,
     ProductForm,
+    ReceiptForm,
     StockDocumentBaseForm,
     StockMoveLineFormSet,
     WarehouseForm,
@@ -124,7 +127,7 @@ def dashboard(request):
     return render(request, "inventory/dashboard.html", context)
 
 
-@login_required
+@inventory_manager_required
 def product_list(request):
     products = Product.objects.select_related("category").all()
     categories = ProductCategory.objects.all()
@@ -138,7 +141,7 @@ def product_list(request):
     )
 
 
-@login_required
+@inventory_manager_required
 def product_create(request):
     if request.method == "POST":
         form = ProductForm(request.POST)
@@ -157,7 +160,7 @@ def product_create(request):
     return render(request, "inventory/product_form.html", {"form": form})
 
 
-@login_required
+@inventory_manager_required
 def product_update(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
@@ -171,13 +174,13 @@ def product_update(request, pk):
     return render(request, "inventory/product_form.html", {"form": form, "product": product})
 
 
-@login_required
+@inventory_manager_required
 def warehouse_list(request):
     warehouses = Warehouse.objects.all()
     return render(request, "inventory/warehouse_list.html", {"warehouses": warehouses})
 
 
-@login_required
+@inventory_manager_required
 def warehouse_create(request):
     if request.method == "POST":
         form = WarehouseForm(request.POST)
@@ -190,7 +193,7 @@ def warehouse_create(request):
     return render(request, "inventory/warehouse_form.html", {"form": form})
 
 
-@login_required
+@inventory_manager_required
 def location_create(request):
     if request.method == "POST":
         form = LocationForm(request.POST)
@@ -240,56 +243,72 @@ def operations_list(request):
     )
 
 
-def _handle_document_create(request, doc_type):
+def _handle_receipt_create(request):
+    """Handle receipt creation with vendor information (external source)."""
     if request.method == "POST":
-        form = StockDocumentBaseForm(request.POST)
+        form = ReceiptForm(request.POST)
         formset = StockMoveLineFormSet(request.POST)
         if form.is_valid() and formset.is_valid():
             document = form.save(commit=False)
-            document.doc_type = doc_type
+            document.doc_type = StockDocument.DocTypes.RECEIPT
             document.created_by = request.user
-            # For deliveries we start in Draft and let the user validate manually.
-            if doc_type == StockDocument.DocTypes.DELIVERY:
-                document.status = StockDocument.Status.DRAFT
-            else:
-                document.status = StockDocument.Status.READY
+            document.source_location = None  # Receipt comes from external vendor
+            document.status = StockDocument.Status.READY
             document.save()
             formset.instance = document
             formset.save()
-            if doc_type == StockDocument.DocTypes.DELIVERY:
-                messages.success(request, "Delivery created in Draft status.")
-                return redirect("inventory:delivery_detail", pk=document.pk)
-            else:
-                validate_document(document)
-                messages.success(request, "Document validated and stock updated.")
-                return redirect("inventory:operations_list")
+            validate_document(document)
+            messages.success(request, "Receipt created and stock updated.")
+            return redirect("inventory:operations_list")
     else:
-        form = StockDocumentBaseForm()
+        form = ReceiptForm()
         formset = StockMoveLineFormSet()
     return form, formset
 
 
-@login_required
+def _handle_delivery_create(request):
+    """Handle delivery creation with customer information (external destination)."""
+    if request.method == "POST":
+        form = DeliveryForm(request.POST)
+        formset = StockMoveLineFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            document = form.save(commit=False)
+            document.doc_type = StockDocument.DocTypes.DELIVERY
+            document.created_by = request.user
+            document.destination_location = None  # Delivery goes to external customer
+            document.status = StockDocument.Status.DRAFT
+            document.save()
+            formset.instance = document
+            formset.save()
+            messages.success(request, "Delivery created in Draft status.")
+            return redirect("inventory:delivery_detail", pk=document.pk)
+    else:
+        form = DeliveryForm()
+        formset = StockMoveLineFormSet()
+    return form, formset
+
+
+@inventory_manager_required
 def receipt_create(request):
-    form, formset = _handle_document_create(request, StockDocument.DocTypes.RECEIPT)
+    form, formset = _handle_receipt_create(request)
     return render(
         request,
         "inventory/document_form.html",
-        {"form": form, "formset": formset, "title": "New Receipt (Incoming Goods)"},
+        {"form": form, "formset": formset, "title": "New Receipt (Incoming from Vendor)"},
     )
 
 
-@login_required
+@inventory_manager_required
 def delivery_create(request):
-    form, formset = _handle_document_create(request, StockDocument.DocTypes.DELIVERY)
+    form, formset = _handle_delivery_create(request)
     return render(
         request,
         "inventory/document_form.html",
-        {"form": form, "formset": formset, "title": "New Delivery Order (Outgoing Goods)"},
+        {"form": form, "formset": formset, "title": "New Delivery Order (Outgoing to Customer)"},
     )
 
 
-@login_required
+@warehouse_staff_required
 def internal_transfer_create(request):
     form, formset = _handle_document_create(request, StockDocument.DocTypes.INTERNAL)
     return render(
@@ -299,7 +318,7 @@ def internal_transfer_create(request):
     )
 
 
-@login_required
+@warehouse_staff_required
 def stock_adjustment_create(request):
     """
     Simplified adjustment: user selects destination location and lines where quantity is delta.
@@ -403,7 +422,7 @@ def stock_list(request):
     )
 
 
-@login_required
+@inventory_manager_required
 def settings_view(request):
     """
     Simple settings page listing warehouses and locations with shortcuts to create new ones.
@@ -503,10 +522,11 @@ def delivery_detail(request, pk):
     )
 
 
-@login_required
+@warehouse_staff_required
 def delivery_validate(request, pk):
     """
     Trigger validation of a delivery document and move stock.
+    Warehouse staff can execute/validate deliveries.
     """
     doc = get_object_or_404(StockDocument, pk=pk, doc_type=StockDocument.DocTypes.DELIVERY)
     validate_document(doc)
@@ -514,22 +534,25 @@ def delivery_validate(request, pk):
     return redirect("inventory:delivery_detail", pk=pk)
 
 
-@login_required
+@inventory_manager_required
 def delivery_edit(request, pk):
     """
     Edit an existing delivery: header info and product lines (Add new product).
     """
     doc = get_object_or_404(StockDocument, pk=pk, doc_type=StockDocument.DocTypes.DELIVERY)
     if request.method == "POST":
-        form = StockDocumentBaseForm(request.POST, instance=doc)
+        form = DeliveryForm(request.POST, instance=doc)
         formset = StockMoveLineFormSet(request.POST, instance=doc)
         if form.is_valid() and formset.is_valid():
             form.save()
+            # Ensure destination_location remains None for external deliveries
+            doc.destination_location = None
+            doc.save()
             formset.save()
             messages.success(request, "Delivery updated.")
             return redirect("inventory:delivery_detail", pk=pk)
     else:
-        form = StockDocumentBaseForm(instance=doc)
+        form = DeliveryForm(instance=doc)
         formset = StockMoveLineFormSet(instance=doc)
 
     return render(
@@ -543,10 +566,11 @@ def delivery_edit(request, pk):
     )
 
 
-@login_required
+@inventory_manager_required
 def delivery_cancel(request, pk):
     """
     Cancel a delivery: mark status as Canceled (no stock movement if not yet done).
+    Only Inventory Managers can cancel deliveries.
     """
     doc = get_object_or_404(StockDocument, pk=pk, doc_type=StockDocument.DocTypes.DELIVERY)
     if doc.status != StockDocument.Status.DONE:

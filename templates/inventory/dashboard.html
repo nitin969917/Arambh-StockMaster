@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-3">Dashboard</h2>
+
+<ul class="nav nav-tabs mb-4">
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url 'inventory:dashboard' %}">Dashboard</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'inventory:operations_list' %}">Operations</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'inventory:stock_list' %}">Stock</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'inventory:move_history' %}">Move History</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'inventory:settings' %}">Settings</a>
+  </li>
+</ul>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card card-kpi shadow-sm h-100">
+      <div class="card-body">
+        <h5>Receipt</h5>
+        <p>
+          <span class="badge bg-primary">{{ receipt_to_receive }}</span>
+          <span class="ms-1">to receive</span>
+        </p>
+        <p class="mb-1">{{ receipt_late }} Late</p>
+        <p class="mb-0">{{ receipt_operations }} operations</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-kpi shadow-sm h-100">
+      <div class="card-body">
+        <h5>Delivery</h5>
+        <p>
+          <span class="badge bg-primary">{{ delivery_to_deliver }}</span>
+          <span class="ms-1">to Deliver</span>
+        </p>
+        <p class="mb-1">{{ delivery_late }} Late</p>
+        <p class="mb-1">{{ delivery_waiting }} waiting</p>
+        <p class="mb-0">{{ delivery_operations }} operations</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-kpi shadow-sm h-100">
+      <div class="card-body">
+        <h6 class="text-muted">Total Products in Stock</h6>
+        <h3>{{ total_stock }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h5>Low Stock / Reorder Alerts</h5>
+<table class="table table-sm table-striped">
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th>Warehouse</th>
+      <th>On Hand</th>
+      <th>Min Qty</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for rule, qty in low_stock_items %}
+    <tr>
+      <td>{{ rule.product }}</td>
+      <td>{{ rule.warehouse }}</td>
+      <td>{{ qty }}</td>
+      <td>{{ rule.min_quantity }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4" class="text-muted">No low stock alerts.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<p class="text-muted small">
+  Late: schedule date &lt; today's date. Operations: all documents for that type. Waiting: documents in \"Waiting\" status.
+</p>
+{% endblock %}
+
+
+

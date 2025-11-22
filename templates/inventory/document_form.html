@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-3">{{ title }}</h2>
+
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:dashboard' %}">Dashboard</a></li>
+  <li class="nav-item"><a class="nav-link active" href="{% url 'inventory:operations_list' %}">Operations</a></li>
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:stock_list' %}">Stock</a></li>
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:move_history' %}">Move History</a></li>
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:settings' %}">Settings</a></li>
+</ul>
+
+<form method="post">
+  {% csrf_token %}
+  <div class="row">
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label">Reference</label>
+        {{ form.reference }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Contact</label>
+        {{ form.contact_name }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Source Location</label>
+        {{ form.source_location }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Destination Location</label>
+        {{ form.destination_location }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Scheduled Date</label>
+        {{ form.scheduled_date }}
+      </div>
+    </div>
+    <div class="col-md-8">
+      <h5>Lines</h5>
+      {{ formset.management_form }}
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Delete?</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for line_form in formset.forms %}
+          <tr>
+            <td>{{ line_form.product }}</td>
+            <td>{{ line_form.quantity }}</td>
+            <td>{{ line_form.DELETE }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <button class="btn btn-primary" type="submit">Validate &amp; Save</button>
+</form>
+{% endblock %}
+
+

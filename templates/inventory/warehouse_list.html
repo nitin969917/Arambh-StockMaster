@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-3">Warehouses</h2>
+
+<div class="mb-3">
+  <a href="{% url 'inventory:warehouse_create' %}" class="btn btn-primary btn-sm me-2">+ New Warehouse</a>
+  <a href="{% url 'inventory:location_create' %}" class="btn btn-outline-primary btn-sm">+ New Location</a>
+</div>
+
+{% for wh in warehouses %}
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">{{ wh.name }} ({{ wh.code }})</h5>
+      <p class="card-text text-muted">{{ wh.address }}</p>
+      <h6>Locations</h6>
+      <ul class="mb-0">
+        {% for loc in wh.locations.all %}
+          <li>{{ loc.code }} - {{ loc.name }}{% if loc.is_default %} (default){% endif %}</li>
+        {% empty %}
+          <li class="text-muted">No locations yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% empty %}
+  <p class="text-muted">No warehouses defined.</p>
+{% endfor %}
+{% endblock %}
+
+

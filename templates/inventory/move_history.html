@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-3">Move History</h2>
+
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:dashboard' %}">Dashboard</a></li>
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:operations_list' %}">Operations</a></li>
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:stock_list' %}">Stock</a></li>
+  <li class="nav-item"><a class="nav-link active" href="{% url 'inventory:move_history' %}">Move History</a></li>
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:settings' %}">Settings</a></li>
+</ul>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <form method="get" class="row g-2 align-items-end flex-grow-1 me-3">
+    <div class="col-md-3">
+      <label class="form-label">Document type</label>
+      <select name="doc_type" class="form-select">
+        <option value="">All</option>
+        {% for value,label in doc_type_choices %}
+          <option value="{{ value }}" {% if value == selected_doc_type %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Reference</label>
+      <input type="text" name="reference" class="form-control" value="{{ selected_reference }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Contact</label>
+      <input type="text" name="contact" class="form-control" value="{{ selected_contact }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">SKU</label>
+      <input type="text" name="sku" class="form-control" value="{{ selected_sku }}">
+    </div>
+    <div class="col-12 mt-2">
+      <button class="btn btn-primary me-2" type="submit">Apply Filters</button>
+      <a href="{% url 'inventory:move_history' %}" class="btn btn-outline-secondary btn-sm">Clear</a>
+    </div>
+  </form>
+  <div class="btn-group">
+    <a href="?view=list" class="btn btn-outline-secondary btn-sm {% if view_mode == 'list' %}active{% endif %}">List</a>
+    <a href="?view=kanban" class="btn btn-outline-secondary btn-sm {% if view_mode == 'kanban' %}active{% endif %}">Kanban</a>
+  </div>
+</div>
+
+{% if view_mode == 'list' %}
+<table class="table table-striped table-sm">
+  <thead>
+    <tr>
+      <th>Reference</th>
+      <th>Date</th>
+      <th>Contact</th>
+      <th>Product</th>
+      <th>From</th>
+      <th>To</th>
+      <th>Quantity</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for e in entries %}
+    {% with doc=e.document %}
+    <tr>
+      <td>{{ doc.reference }}</td>
+      <td>{{ e.created_at|date:"Y-m-d H:i" }}</td>
+      <td>{{ doc.contact_name }}</td>
+      <td>{{ e.product }}</td>
+      <td>{{ e.source_location|default:"-" }}</td>
+      <td>{{ e.destination_location|default:"-" }}</td>
+      <td class="{% if e.quantity_delta > 0 %}text-success{% elif e.quantity_delta < 0 %}text-danger{% endif %}">
+        {{ e.quantity_delta }}
+      </td>
+      <td>{{ doc.get_status_display }}</td>
+    </tr>
+    {% endwith %}
+  {% empty %}
+    <tr><td colspan="8" class="text-muted">No history entries.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+  {# Simple kanban-style view grouped by document status #}
+  <div class="row">
+    {% for status_value,status_label in status_choices %}
+      <div class="col-md-3 mb-3">
+        <div class="card h-100">
+          <div class="card-header text-center">
+            {{ status_label }}
+          </div>
+          <div class="card-body p-2" style="max-height: 400px; overflow-y: auto;">
+            {% for e in entries %}
+              {% if e.document.status == status_value %}
+                <div class="card mb-2 border-0 border-start border-3 {% if e.quantity_delta > 0 %}border-success{% elif e.quantity_delta < 0 %}border-danger{% endif %}">
+                  <div class="card-body p-2">
+                    <div class="small fw-bold">{{ e.document.reference }} - {{ e.product.sku }}</div>
+                    <div class="small text-muted">
+                      {{ e.source_location|default:"-" }} → {{ e.destination_location|default:"-" }}
+                    </div>
+                    <div class="small">
+                      Qty:
+                      <span class="{% if e.quantity_delta > 0 %}text-success{% elif e.quantity_delta < 0 %}text-danger{% endif %}">
+                        {{ e.quantity_delta }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              {% endif %}
+            {% empty %}
+              <p class="text-muted small">No moves.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}
+
+

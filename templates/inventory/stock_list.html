@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-3">Stock</h2>
+
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:dashboard' %}">Dashboard</a></li>
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:operations_list' %}">Operations</a></li>
+  <li class="nav-item"><a class="nav-link active" href="{% url 'inventory:stock_list' %}">Stock</a></li>
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:move_history' %}">Move History</a></li>
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:settings' %}">Settings</a></li>
+</ul>
+
+<form method="get" class="row g-2 align-items-end mb-3">
+  <div class="col-md-3">
+    <label class="form-label">Warehouse</label>
+    <select name="warehouse" class="form-select">
+      <option value="">All</option>
+      {% for wh in warehouses %}
+        <option value="{{ wh.id }}" {% if wh.id|stringformat:'s' == selected_warehouse %}selected{% endif %}>{{ wh.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Location</label>
+    <select name="location" class="form-select">
+      <option value="">All</option>
+      {% for loc in locations %}
+        <option value="{{ loc.id }}" {% if loc.id|stringformat:'s' == selected_location %}selected{% endif %}>{{ loc }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">SKU</label>
+    <input type="text" name="sku" class="form-control" value="{{ selected_sku }}">
+  </div>
+  <div class="col-md-3">
+    <button class="btn btn-primary w-100" type="submit">Apply Filters</button>
+  </div>
+</form>
+
+<table class="table table-striped table-sm">
+  <thead>
+    <tr>
+      <th>SKU</th>
+      <th>Product</th>
+      <th>Warehouse</th>
+      <th>Location</th>
+      <th>Quantity</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for q in quants %}
+    <tr>
+      <td>{{ q.product.sku }}</td>
+      <td>{{ q.product.name }}</td>
+      <td>{{ q.location.warehouse.name }}</td>
+      <td>{{ q.location.code }}</td>
+      <td>{{ q.quantity }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="5" class="text-muted">No stock records found.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
+

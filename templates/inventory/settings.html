@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-3">Settings</h2>
+
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:dashboard' %}">Dashboard</a></li>
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:operations_list' %}">Operations</a></li>
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:stock_list' %}">Stock</a></li>
+  <li class="nav-item"><a class="nav-link" href="{% url 'inventory:move_history' %}">Move History</a></li>
+  <li class="nav-item"><a class="nav-link active" href="{% url 'inventory:settings' %}">Settings</a></li>
+</ul>
+
+<div class="mb-3">
+  <a href="{% url 'inventory:warehouse_create' %}" class="btn btn-outline-primary btn-sm me-2">+ Warehouse</a>
+  <a href="{% url 'inventory:location_create' %}" class="btn btn-outline-primary btn-sm">+ Location</a>
+</div>
+
+{% for wh in warehouses %}
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">{{ wh.name }} ({{ wh.code }})</h5>
+      <p class="card-text text-muted">{{ wh.address }}</p>
+      <h6>Locations</h6>
+      <ul class="mb-0">
+        {% for loc in wh.locations.all %}
+          <li>{{ loc.code }} - {{ loc.name }}{% if loc.is_default %} (default){% endif %}</li>
+        {% empty %}
+          <li class="text-muted">No locations yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% empty %}
+  <p class="text-muted">No warehouses defined. Use the buttons above to create one.</p>
+{% endfor %}
+{% endblock %}
+
+

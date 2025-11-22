@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load form_tags %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="text-center mb-4">
+      <h2>StockMaster</h2>
+      <p class="text-muted">Login to your account</p>
+    </div>
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+          {% endif %}
+          <div class="mb-3">
+            <label class="form-label">Login Id</label>
+            {{ form.username|add_class:"form-control" }}
+            {% for error in form.username.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            {{ form.password|add_class:"form-control" }}
+            {% for error in form.password.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="d-grid mb-2">
+            <button type="submit" class="btn btn-primary">SIGN IN</button>
+          </div>
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'accounts:password_reset_request' %}">Forget Password?</a>
+            <a href="{% url 'accounts:signup' %}">Sign Up</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

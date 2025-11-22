@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-3">Products</h2>
+
+<div class="mb-3">
+  <a href="{% url 'inventory:product_create' %}" class="btn btn-primary btn-sm">+ New Product</a>
+</div>
+
+<form method="get" class="row g-2 align-items-end mb-3">
+  <div class="col-md-4">
+    <label class="form-label">Category</label>
+    <select name="category" class="form-select">
+      <option value="">All</option>
+      {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if cat.id|stringformat:'s' == selected_category %}selected{% endif %}>{{ cat.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-4">
+    <button class="btn btn-primary w-100" type="submit">Apply Filters</button>
+  </div>
+</form>
+
+<table class="table table-striped table-sm">
+  <thead>
+    <tr>
+      <th>SKU</th>
+      <th>Name</th>
+      <th>Category</th>
+      <th>Unit</th>
+      <th>Active</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for p in products %}
+    <tr>
+      <td>{{ p.sku }}</td>
+      <td>{{ p.name }}</td>
+      <td>{{ p.category }}</td>
+      <td>{{ p.unit_of_measure }}</td>
+      <td>{% if p.is_active %}Yes{% else %}No{% endif %}</td>
+      <td><a href="{% url 'inventory:product_update' p.id %}" class="btn btn-link btn-sm">Edit</a></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6" class="text-muted">No products found.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
+
